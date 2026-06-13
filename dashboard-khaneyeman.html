@@ -865,7 +865,8 @@ function closeCPanel() {
 
 function copyCustomerLink(ph) {
   const clean=ph.replace(/^0/,'98');
-  const link=window.location.href.split('?')[0]+'?customer='+clean;
+  const base='https://miladsafari537-ai.github.io/Khaneyeman-dashboard/dashboard-khaneyeman.html';
+  const link=base+'?customer='+clean;
   navigator.clipboard.writeText(link)
     .then(()=>showToast('🔗','لینک مشتری کپی شد'))
     .catch(()=>{prompt('لینک مشتری:',link);});
