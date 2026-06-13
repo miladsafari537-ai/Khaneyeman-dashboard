@@ -1,5 +1,4 @@
-
-    ${(()=>{ var p3=(r['شماره تماس']||'').trim(); if(!p3)return ''; var sc=calcScore(getByPhone(p3)); return '<div class=\'det-row\'><span class=\'dk\'>امتیاز</span>'+'<span class=\'dv\'>'+sc.grade+' '+P(sc.pct)+'/۱۰۰</span></div>'+'<div style=\'margin-top:8px;display:flex;gap:6px\'>'+'<button class=\'link-btn\' style=\'flex:1\' onclick=\'openCPanel("'+p3+'")\'>👤 پنل مشتری</button>'+'<button class=\'link-btn\' style=\'flex:1\' onclick=\'copyCustomerLink("'+p3+'")\'>🔗 کپی لینک</button>'+'</div>'; })()} <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -670,22 +669,35 @@ function showDetail(idx) {
   const mande = Number(r['مانده اقساط']||0);
   const pct = tot ? Math.round(paid/tot*100) : 0;
   const name = (r['نام خریدار']||'—').trim();
-  document.getElementById('detPanel').innerHTML = `
-    <div class="det-name">${name}</div>
-    <div class="det-prod">📦 ${r['محصول']||'—'} | ${r['شبکه سفارش']||''} | سال ${r['سال']||''}</div>
-    <div class="det-row"><span class="dk">فاکتور</span><span class="dv">${r['شماره فاکتور']||'—'}</span></div>
-    <div class="det-row"><span class="dk">تاریخ</span><span class="dv">${r['تاریخ فاکتور']||'—'}</span></div>
-    <div class="det-row"><span class="dk">تماس</span><span class="dv" style="direction:ltr">${r['شماره تماس']||'—'}</span></div>
-    <div class="det-row"><span class="dk">مبلغ کل</span><span class="dv" style="color:var(--accent)">${tot.toLocaleString('fa-IR')} ریال</span></div>
-    <div class="det-row"><span class="dk">پرداخت</span><span class="dv" style="color:var(--green)">${paid.toLocaleString('fa-IR')} ریال</span></div>
-    <div class="det-row"><span class="dk">مانده</span><span class="dv" style="color:var(--red)">${mande.toLocaleString('fa-IR')} ریال</span></div>
-    <div class="det-row"><span class="dk">پیشرفت</span><span class="dv" style="color:var(--accent)">${P(pct)}٪</span></div>
-    <div style="margin-top:8px;background:var(--border);border-radius:4px;height:6px;overflow:hidden">
-      <div style="height:100%;background:linear-gradient(90deg,var(--green),var(--accent));width:${pct}%;border-radius:4px;transition:width .6s"></div>
-    </div>
-    ${r['وضعیت سفارش']?`<div class="det-row" style="margin-top:6px"><span class="dk">یادداشت</span><span class="dv" style="font-size:10px;color:var(--muted)">${r['وضعیت سفارش']}</span></div>`:''}
-  `;
-  const insts = getInsts(r);
+  const ph = (r['شماره تماس']||'').trim();
+
+  // Score
+  const scoreHtml = ph ? (function() {
+    const s = calcScore(getByPhone(ph));
+    return '<div class="det-row"><span class="dk">امتیاز</span><span class="dv">' + s.grade + ' ' + P(s.pct) + '/۱۰۰</span></div>'
+      + '<div style="margin-top:8px;display:flex;gap:6px">'
+      + '<button class="link-btn" style="flex:1" onclick="openCPanel(\'' + ph + '\')">👤 پنل مشتری</button>'
+      + '<button class="link-btn" style="flex:1" onclick="copyCustomerLink(\'' + ph + '\')">🔗 کپی لینک</button>'
+      + '</div>';
+  })() : '';
+
+  document.getElementById('detPanel').innerHTML =
+    '<div class="det-name">' + name + '</div>'
+    + '<div class="det-prod">📦 ' + (r['محصول']||'—') + ' | ' + (r['شبکه سفارش']||'') + ' | سال ' + (r['سال']||'') + '</div>'
+    + '<div class="det-row"><span class="dk">فاکتور</span><span class="dv">' + (r['شماره فاکتور']||'—') + '</span></div>'
+    + '<div class="det-row"><span class="dk">تاریخ</span><span class="dv">' + (r['تاریخ فاکتور']||'—') + '</span></div>'
+    + '<div class="det-row"><span class="dk">تماس</span><span class="dv" style="direction:ltr">' + (ph||'—') + '</span></div>'
+    + '<div class="det-row"><span class="dk">مبلغ کل</span><span class="dv" style="color:var(--accent)">' + tot.toLocaleString('fa-IR') + ' ریال</span></div>'
+    + '<div class="det-row"><span class="dk">پرداخت</span><span class="dv" style="color:var(--green)">' + paid.toLocaleString('fa-IR') + ' ریال</span></div>'
+    + '<div class="det-row"><span class="dk">مانده</span><span class="dv" style="color:var(--red)">' + mande.toLocaleString('fa-IR') + ' ریال</span></div>'
+    + '<div class="det-row"><span class="dk">پیشرفت</span><span class="dv" style="color:var(--accent)">' + P(pct) + '٪</span></div>'
+    + '<div style="margin-top:8px;background:var(--border);border-radius:4px;height:6px;overflow:hidden">'
+    + '<div style="height:100%;background:linear-gradient(90deg,var(--green),var(--accent));width:' + pct + '%;border-radius:4px;transition:width .6s"></div>'
+    + '</div>'
+    + (r['وضعیت سفارش'] ? '<div class="det-row" style="margin-top:6px"><span class="dk">یادداشت</span><span class="dv" style="font-size:10px;color:var(--muted)">' + r['وضعیت سفارش'] + '</span></div>' : '')
+    + scoreHtml;
+
+  const insts = INST_NAMES.map((n,i) => ({num:i+1, name:n, date:r['تاریخ قسط '+n]||'', amount:Number(r['مبلغ قسط '+n]||0)})).filter(x => x.amount>0);
   const today = todayJalali();
   const sec = document.getElementById('instSec');
   if (insts.length) {
@@ -693,21 +705,24 @@ function showDetail(idx) {
     let h = '<div class="inst-title">جزئیات اقساط</div>';
     insts.forEach(inst => {
       const diff = inst.date ? dateDiff(today, inst.date) : null;
-      const cls = diff === null ? 'i-fut' : diff > 0 ? 'i-late' : 'i-paid';
-      const fill = cls==='i-paid'?'var(--green)':cls==='i-late'?'var(--orange)':'var(--dim)';
+      const cls = diff===null?'i-fut': diff>0?'i-late':'i-paid';
+      const fill = cls==='i-paid'?'var(--green)': cls==='i-late'?'var(--orange)':'var(--dim)';
       const pct2 = tot ? Math.min(100, Math.round(inst.amount/tot*100)) : 0;
-      h += `<div class="inst-row">
-        <div class="inst-num ${cls}">${P(inst.num)}</div>
-        <div class="inst-info">
-          <div class="inst-date">${inst.date||'تاریخ نامشخص'}</div>
-          <div class="inst-bar"><div class="inst-fill" style="width:${pct2}%;background:${fill}"></div></div>
-        </div>
-        <div class="inst-amt">${inst.amount.toLocaleString('fa-IR')} ریال</div>
-      </div>`;
+      h += '<div class="inst-row">'
+        + '<div class="inst-num ' + cls + '">' + P(inst.num) + '</div>'
+        + '<div class="inst-info">'
+        + '<div class="inst-date">' + (inst.date||'تاریخ نامشخص') + '</div>'
+        + '<div class="inst-bar"><div class="inst-fill" style="width:' + pct2 + '%;background:' + fill + '"></div></div>'
+        + '</div>'
+        + '<div class="inst-amt">' + inst.amount.toLocaleString('fa-IR') + ' ریال</div>'
+        + '</div>';
     });
     sec.innerHTML = h;
-  } else { sec.style.display = 'none'; }
+  } else {
+    sec.style.display = 'none';
+  }
 }
+
 
 // ===== LAST 10 =====
 function renderLast10(data) {
@@ -747,9 +762,7 @@ function setDateTime() {
 
 // ===== SYNC =====
 function doSync() {
-  const ico = document.getElementById('syncIco');
-  ico.classList.add('spin');
-  setTimeout(() => { ico.classList.remove('spin'); showToast('🔄', 'داده‌ها بروز شدند'); refresh(); }, 1200);
+  fetchSheets();
 }
 
 // ===== REFRESH =====
@@ -880,11 +893,187 @@ function checkCustomerParam() {
   setTimeout(()=>openCPanel(ph),400);
 }
 
+
+// ===== GOOGLE SHEET LIVE FETCH =====
+const CSV_1404 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vReTXUuGRr9hC2y0NDAXPYg83BgDBDiPmKnn7fb1avE_Ey6Is-hZ0vbhkTXQLrNv2UuzHroVpZmgaJI/pub?gid=722852037&single=true&output=csv';
+const CSV_1405 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSGxIhYjxghEYLOtxpkRuUuIAd118frjiWB-bCfcd3M1NbmJj5zuUtxZGUxh55EAiQbwktLEEFbk-pQ/pub?gid=696179672&single=true&output=csv';
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let c of line) {
+      if (c==='"') inQ=!inQ;
+      else if (c===',' && !inQ) { vals.push(cur); cur=''; }
+      else cur+=c;
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach((h,i) => {
+      const v = (vals[i]||'').trim().replace(/^"|"$/g,'');
+      obj[h] = v;
+    });
+    return obj;
+  });
+}
+
+function cleanNum(v) {
+  if (!v) return 0;
+  const n = parseFloat(String(v).replace(/,/g,'').trim());
+  return isNaN(n) ? 0 : Math.round(n);
+}
+
+function processRows(rows, year) {
+  return rows
+    .filter(r => (r['نام خریدار '] || r['نام خریدار'] || '').trim())
+    .map(r => {
+      const out = {'سال': year};
+      Object.keys(r).forEach(k => out[k.trim()] = r[k]);
+      // normalize name key
+      if (out['نام خریدار '] && !out['نام خریدار']) out['نام خریدار'] = out['نام خریدار '];
+      // numeric fields
+      ['مبلغ کل اقساط','مبلغ قسط','مانده اقساط','جمع مبلغ پرداخت شده',
+       'مبلغ قسط اول','مبلغ قسط دوم','مبلغ قسط سوم','مبلغ قسط چهارم',
+       'مبلغ قسط پنجم','مبلغ قسط ششم','مبلغ قسط هفتم','مبلغ قسط هشتم',
+       'مبلغ قسط نهم','مبلغ قسط دهم'].forEach(f => {
+        out[f] = cleanNum(r[f] || r[f+' '] || 0);
+      });
+      // date fields
+      ['تاریخ قسط اول','تاریخ قسط دوم','تاریخ قسط سوم','تاریخ قسط چهارم',
+       'تاریخ قسط پنجم','تاریخ قسط ششم','تاریخ قسط هفتم','تاریخ قسط هشتم',
+       'تاریخ قسط نهم','تاریخ قسط دهم'].forEach(f => {
+        out[f] = (r[f+' '] || r[f] || '').trim();
+      });
+      return out;
+    })
+    .filter(r => (r['پرداخت اقساط']||'') !== '#DIV/0!');
+}
+
+async function fetchSheets() {
+  const syncBtn = document.getElementById('syncIco');
+  if (syncBtn) syncBtn.classList.add('spin');
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(CSV_1404).then(r => r.text()),
+      fetch(CSV_1405).then(r => r.text())
+    ]);
+    const d1 = processRows(parseCSV(r1), 1404);
+    const d2 = processRows(parseCSV(r2), 1405);
+    const all = [...d1, ...d2];
+    // Update RAW_DATA in place
+    RAW_DATA.length = 0;
+    all.forEach(r => RAW_DATA.push(r));
+    refresh();
+    showToast('✅', 'داده‌ها از گوگل شیت بروز شد — ' + P(all.length) + ' ردیف');
+  } catch(e) {
+    showToast('⚠️', 'خطا در دریافت از گوگل شیت');
+    console.error(e);
+  } finally {
+    if (syncBtn) syncBtn.classList.remove('spin');
+  }
+}
+
+// ===== GOOGLE SHEET SYNC =====
+const CSV_URLS = {
+  '1404': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vReTXUuGRr9hC2y0NDAXPYg83BgDBDiPmKnn7fb1avE_Ey6Is-hZ0vbhkTXQLrNv2UuzHroVpZmgaJI/pub?gid=722852037&single=true&output=csv',
+  '1405': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSGxIhYjxghEYLOtxpkRuUuIAd118frjiWB-bCfcd3M1NbmJj5zuUtxZGUxh55EAiQbwktLEEFbk-pQ/pub?gid=696179672&single=true&output=csv'
+};
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line => {
+    // Handle quoted fields
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i=0; i<line.length; i++) {
+      if (line[i]==='"') { inQ=!inQ; }
+      else if (line[i]===','&&!inQ) { vals.push(cur.trim()); cur=''; }
+      else cur+=line[i];
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = vals[i]||'');
+    return obj;
+  }).filter(r => (r['نام خریدار ']||r['نام خریدار']||'').trim());
+}
+
+function cleanNum(v) {
+  if (!v) return 0;
+  try { return parseInt(parseFloat(String(v).replace(/,/g,'').trim())||0); }
+  catch(e) { return 0; }
+}
+
+function normalizeRow(r, year) {
+  const out = {'سال': year};
+  Object.keys(r).forEach(k => {
+    const key = k.trim();
+    out[key] = r[k];
+  });
+  // Normalize name field
+  if (!out['نام خریدار'] && out['نام خریدار ']) out['نام خریدار'] = out['نام خریدار '].trim();
+  // Numeric fields
+  ['مبلغ کل اقساط','مبلغ قسط','مانده اقساط','جمع مبلغ پرداخت شده',
+   'مبلغ قسط اول','مبلغ قسط دوم','مبلغ قسط سوم','مبلغ قسط چهارم',
+   'مبلغ قسط پنجم','مبلغ قسط ششم','مبلغ قسط هفتم','مبلغ قسط هشتم',
+   'مبلغ قسط نهم','مبلغ قسط دهم'].forEach(f => {
+    out[f] = cleanNum(out[f]);
+  });
+  // Date fields - normalize keys
+  ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم'].forEach(n => {
+    const k1 = 'تاریخ قسط '+n+' ';
+    const k2 = 'تاریخ قسط '+n;
+    if (out[k1]) out[k2] = out[k1].trim();
+    else if (out[k2]) out[k2] = out[k2].trim();
+  });
+  return out;
+}
+
+async function syncFromSheet() {
+  const btn = document.querySelector('.sync-btn');
+  const ico = document.getElementById('syncIco');
+  ico.classList.add('spin');
+  btn.disabled = true;
+  
+  try {
+    let allRows = [];
+    for (const [year, url] of Object.entries(CSV_URLS)) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('خطا در دریافت داده ' + year);
+      const text = await resp.text();
+      const rows = parseCSV(text).map(r => normalizeRow(r, parseInt(year)));
+      allRows = allRows.concat(rows);
+    }
+    
+    if (allRows.length > 0) {
+      // Update RAW_DATA in place
+      RAW_DATA.length = 0;
+      allRows.forEach(r => RAW_DATA.push(r));
+      refresh();
+      showToast('✅', 'داده‌ها از Google Sheet بروز شدند — ' + P(allRows.length) + ' ردیف');
+    } else {
+      showToast('⚠️', 'داده‌ای دریافت نشد');
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('⚠️', 'خطا در اتصال به Google Sheet');
+  } finally {
+    ico.classList.remove('spin');
+    btn.disabled = false;
+  }
+}
+
 // ===== INIT =====
 setDateTime();
 setInterval(setDateTime, 60000);
-refresh();
+fetchSheets();
 checkCustomerParam();
+// Auto-refresh every 5 minutes
+setInterval(fetchSheets, 5*60*1000);
 </script>
 </body>
 </html>
